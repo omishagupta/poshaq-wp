@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       PoshaqPlug
  * Plugin URI:        http://getposhaq.com/
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Description:       adding intelligence to your blogs.
  * Version:           1.0.0
  * Author:            poshaQ
  * Author URI:         http://getposhaq.com/
