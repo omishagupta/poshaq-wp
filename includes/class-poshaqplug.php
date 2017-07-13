@@ -70,7 +70,6 @@ class Poshaqplug {
 
 		$this->plugin_name = 'poshaqplug';
 		$this->version = '1.0.0';
-
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
@@ -150,7 +149,6 @@ class Poshaqplug {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Poshaqplug_Admin( $this->get_plugin_name(), $this->get_version() );
-
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
@@ -166,7 +164,6 @@ class Poshaqplug {
 	private function define_public_hooks() {
 
 		$plugin_public = new Poshaqplug_Public( $this->get_plugin_name(), $this->get_version() );
-
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
@@ -180,8 +177,7 @@ class Poshaqplug {
 	public function run() {
 		$this->loader->run();
 		add_action('admin_menu', 'Poshaq_menu');
-		//add_filter( 'cron_schedules', 'add_cron_interval' );
-		//date_default_timezone_set('Asia/Kolkata');
+		add_shortcode('poshaq', 'shortcode');
 		}
 
 	/**
@@ -215,23 +211,91 @@ class Poshaqplug {
 		return $this->version;
 	}
 
-}
+}	
+	if (!function_exists('Poshaq_menu')) {
 	function Poshaq_menu() {
-	add_options_page('Poshaq', 'Poshaq', 'manage_options', __FILE__, 'Poshaq_admin');
+	add_menu_page('Poshaq', 'poshaQ', 'manage_options', __FILE__, 'Poshaq_admin', 'dashicons-admin-site', 6);
 	}
-	function Poshaq_admin() {
-		echo $time;
-		print_r( _get_cron_array() );
-		echo '<br>';
-	echo date("Y/m/d h:i:s a");
-	echo '<br>';
-	print_r(get_option('cron'));
-	include '\includes\index.php';
+	}
+	if (!function_exists('Poshaq_admin')) {
+	function Poshaq_admin() {	
+	require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/index.php';
 	$myListTable = new Posts_list();
-	echo '<div class="wrap"><h2>Poshaq</h2>'; 
+	echo '<div class="wrap"><h2>poshaQ</h2>'; 
 	$myListTable->prepare_items(); 
 	$myListTable->display(); 
 	echo '</div>';
+		}
 	}
+	if (!function_exists('shortcode')) 
+	{
+	function shortcode() {
+	$request = wp_remote_get( 'http://onboarding.getposhaq.com/api/v1/posts' );
+	if( is_wp_error( $request ) ) {
+	return false; 
+	}
+	$body = wp_remote_retrieve_body( $request );
+	$data = json_decode( $body );
 	
-	
+	if( ! empty( $data ) ) {
+	$output=array();	
+	foreach( $data as $product ) {
+		 
+		array_push( $output, $product);
+				
+	}
+
+		echo '<div class="flexslider">
+				  <ul class="slides">';
+				  
+			foreach($output as $value){
+					echo '
+				
+					<li>
+					  <img style="width:200px" src="'.$value->suggestions.'" />
+					</li>
+				
+				  ';
+
+			}
+			
+			echo '</ul>
+				</div>';
+				
+				
+		echo '<script>
+				var script = document.createElement("script");
+				
+				script.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js";
+		document.getElementsByTagName("head")[0].appendChild(script);
+
+		script = document.createElement("script");
+		script.src = "https://cdnjs.cloudflare.com/ajax/libs/flexslider/2.6.3/jquery.flexslider.js";
+		document.getElementsByTagName("head")[0].appendChild(script);
+
+		var link = document.createElement("link");
+		link.type = "text/css";
+				link.rel = "stylesheet";
+		link.href = "https://cdnjs.cloudflare.com/ajax/libs/flexslider/2.6.3/flexslider.css";
+		document.getElementsByTagName("head")[0].appendChild(link);
+
+		script.onload = function() {
+
+
+		  $(window).load(function() {
+		  $(".flexslider").flexslider({
+			animation: "slide",
+			animationLoop: false,
+			itemWidth: 210,
+			itemMargin: 5,
+			minItems: 2,
+			maxItems: 4
+		  });
+		});
+		 
+		  };
+</script>';
+	}		
+	}
+	}
+?>

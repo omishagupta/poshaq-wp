@@ -2,12 +2,20 @@
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
+require_once plugin_dir_path( dirname( __FILE__ ) ) .'includes\class-poshaqplug.php';
+require_once plugin_dir_path( dirname( __FILE__ ) ) .'admin\js\poshaqplug-admin.js';
+
 class Posts_list extends WP_List_Table {
-//$date=date();
-	
-	var $data = array(
-	array('Title' => 'Poshaq' ,'Shortcode' => '[Poshaq]', 'description' => 'sdhhsdgkh'
+	private $data;
+	public function __construct() {
+	add_filter('page_row_actions', 'copy_text', 1, 2);
+	parent::__construct();
+	$this->data = array(
+	array('Title' => 'Poshaq' ,
+	'Shortcode' => '<div style="cursor:pointer; color: RGB(52, 152, 219)" class="btnn" data-clipboard-text="[poshaq]">[poshaq id=1]</div>', 
+	'description' => 'you can describe me here'
 	));
+	}
  	function get_columns() {
 		return $columns= array(
 		  'cb' => '<input type="checkbox" />',
@@ -15,20 +23,25 @@ class Posts_list extends WP_List_Table {
 		  'Shortcode'=>__('Shortcode'),
 		  'description'=>__('description') 
 	   );
-   }
-function prepare_items() {
+	}
+	
+	function copy_text($actions, $always_visible=true) {
+		$actions['copy']= '<div style="cursor:pointer; color: RGB(52, 152, 219)" class="btnn" data-clipboard-text="[poshaq]">'.__('copy').'</div>';
+		return $actions;
+	}
+	function prepare_items() {
   $columns = $this->get_columns();
   $hidden = array();
   $sortable = $this->get_sortable_columns();
   $this->_column_headers = array($columns, $hidden, $sortable);
   $this->items = $this->data;
-}
+	}
 	
 	function column_default( $item, $column_name ) {
 	switch( $column_name ) { 
     case 'Title':
     case 'Shortcode':
-    case 'description':
+    case 'description': 
 	return $item[ $column_name ];
     default:
     return print_r( $item, true ) ; //Show the whole array for troubleshooting purposes

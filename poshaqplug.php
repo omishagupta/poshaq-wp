@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       PoshaqPlug
  * Plugin URI:        http://getposhaq.com/
- * Description:       adding intelligence to your blogs.
+ * Description:       We add intelligence to your blogs.
  * Version:           1.0.0
  * Author:            poshaQ
  * Author URI:         http://getposhaq.com/
@@ -31,27 +31,14 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * The code that runs during plugin activation.
- * This action is documented in includes/class-poshaqplug-activator.php
+ * The hook that runs during plugin activation.
  */
-function activate_poshaqplug() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-poshaqplug-activator.php';
-	Poshaqplug_Activator::activate();
-}
+register_activation_hook( __FILE__, 'poshaq_activate' );
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-poshaqplug-deactivator.php
  */
-function deactivate_poshaqplug() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-poshaqplug-deactivator.php';
-	Poshaqplug_Deactivator::deactivate();
-}
-
-register_activation_hook( __FILE__, 'activate_poshaqplug' );
-register_deactivation_hook( __FILE__, 'deactivate_poshaqplug' );
-
+register_deactivation_hook( __FILE__, 'poshaq_deactivate' );
 /**
- * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-poshaqplug.php';
@@ -71,4 +58,61 @@ function run_poshaqplug() {
 
 }
 run_poshaqplug();
+
+/* 
+** The code that runs during plugin activation. 
+*/
+add_action( 'my_daily_event',  'update_poshaq_db_daily' );
+	
+	function poshaq_activate() {
+		if ( ! wp_next_scheduled( 'my_daily_event' ) ) {
+			wp_schedule_event( time(), 'twicedaily', 'my_daily_event' );
+		}
+	}
+
+/* 
+ ** This code will fetch published and Drafted Post data from the bloggers site. 
+*/
+		function update_poshaq_db_daily() {
+		$articles = get_posts(
+			array(
+				'numberposts' => -1,
+				'post_status' => array('publish', 'draft'),
+				'post_type' => get_post_types('', 'names'),
+			)
+		);
+		foreach ($articles as $article) {
+			if (!get_post_meta($article->ID, '_pshq_sync', true)) {
+			$args= array(
+			"website"=> $_SERVER['SERVER_NAME'],
+			"post"=>  $article /*$_REQUEST['post']*/
+		);
+			$response 	= wp_remote_post( 'http://onboarding.getposhaq.com/api/v1/posts', array(
+			'headers'   => array('Content-Type' => 'application/json; charset=utf-8'),
+			'body'      => json_encode($args), 
+			'method'    => 'POST'
+		));
+				var_dump(metadata_exists($article->post_type, $article->ID, '_pshq_sync'));
+				//print_r($article->ID);
+				print_r($article->post_type); //this is a column? yess i guess
+				update_post_meta($article->ID, '_pshq_sync', true);
+				$_REQUEST['post'] = $article;
+		
+	 	
+			}
+			
+		}
+		
+	}
+
+/* 
+ ** This will deactivate the plugin
+ ** And dequeue the event which was scheduled when plugin was activated. 
+*/
+
+	function poshaq_deactivate() {
+		$timestamp = wp_next_scheduled( 'my_daily_event' );
+		wp_unschedule_event( $timestamp, 'my_daily_event' );
+	}
+
 ?>

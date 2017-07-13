@@ -1,32 +1,17 @@
-(function( $ ) {
-	'use strict';
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+<script>
+var clipboard = new Clipboard('.btnn');
 
-	/**
-	 * All of the code for your admin-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
+clipboard.on('success', function(e) {
+    console.info('Accion:', e.action);
+    console.info('Texto:', e.text);
+    console.info('Trigger:', e.trigger);
 
-})( jQuery );
+    e.clearSelection();
+});
+
+clipboard.on('error', function(e) {
+    console.error('Accion:', e.action);
+    console.error('Trigger:', e.trigger);
+});
+</script>
